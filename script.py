@@ -15,20 +15,6 @@ def get_followers(api, redis_client):
         for screen_name in to_cache:
             redis_client.lpush(key, screen_name)
 
-"""
-#Synchronized version to get likes from your followers.
-def get_followers_likes(api, redis_client):
-    key = 'twitter_followers'
-    if redis_client.exists(key):
-        followers_list = redis_client.lrange(key, 0, -1)
-        followers_dict = dict()
-
-        for screen_name in followers_list:
-            followers_dict[screen_name] = api.GetFavorites(screen_name=screen_name, count=30)
-
-        return followers_dict
-"""
-
 #Helper for the ThreadPoolExecutor
 def get_from_url(screen_name, api):
     return screen_name, api.GetFavorites(screen_name=screen_name, count=30)
