@@ -4,6 +4,7 @@ import redis
 import config
 import concurrent.futures
 
+#Retrieve a list of your followers and cache it using Redis.
 def get_followers(api, redis_client):
     key = 'twitter_followers'
     if not redis_client.exists(key):
@@ -15,11 +16,12 @@ def get_followers(api, redis_client):
         for screen_name in to_cache:
             redis_client.lpush(key, screen_name)
 
-#Helper for the ThreadPoolExecutor
-def get_from_url(screen_name, api):
+#Retrieve 30 most recent favorited/liked tweets for one follower.
+def get_user_likes(screen_name, api):
     return screen_name, api.GetFavorites(screen_name=screen_name, count=30)
 
-#ThreadPoolExecutor version to get likes of all your followers.
+#Function to retrieve the 30 most recent liked/favorited tweets for each of your
+#followers on Twitter.
 def get_followers_likes(api, redis_client):
     key = 'twitter_followers'
     if redis_client.exists(key):
@@ -29,7 +31,7 @@ def get_followers_likes(api, redis_client):
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             for screen_name in followers_list:
-                futures.append(executor.submit(get_from_url, screen_name, api))
+                futures.append(executor.submit(get_user_likes, screen_name, api))
 
             for res in concurrent.futures.as_completed(futures):
                 tup = res.result()
@@ -45,6 +47,7 @@ def output_csv(followers):
             for row in followers:
                 writer.writerow(row)
 
+#Use set intersection algorithm to count number of liked tweets you have in common.
 def find_intersection(api, followers):
     my_likes = api.GetFavorites(count=30)
     my_dict = dict()
