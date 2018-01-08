@@ -40,7 +40,7 @@ def get_followers_likes(api, redis_client):
             return followers_dict
 
 def output_csv(followers):
-    if followers != None:
+    if followers is not None:
         followers = sorted(followers, key = lambda x : x[1], reverse=True)
         with open('follower_likes.csv', 'w') as csv_file:
             writer = csv.writer(csv_file)
@@ -49,6 +49,9 @@ def output_csv(followers):
 
 #Use set intersection algorithm to count number of liked tweets you have in common.
 def find_intersection(api, followers):
+    if followers is None:
+        return
+    
     my_likes = api.GetFavorites(count=30)
     my_dict = dict()
     for like in my_likes:
